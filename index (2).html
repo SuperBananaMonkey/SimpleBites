@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SimpleTaste — Best Simple Recipes</title>
+<style>
+  :root {
+    --bg-light: #f9f9f9;
+    --bg-dark: #121212;
+    --text-light: #222;
+    --text-dark: #eee;
+    --primary: #ff7043;
+    --primary-dark: #ffab91;
+    --card-bg-light: #fff;
+    --card-bg-dark: #1e1e1e;
+    --shadow-light: rgba(0,0,0,0.1);
+    --shadow-dark: rgba(0,0,0,0.7);
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    transition: background-color 0.3s, color 0.3s;
+  }
+  body.dark {
+    background-color: var(--bg-dark);
+    color: var(--text-dark);
+  }
+  nav {
+    background: var(--primary);
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  nav h1 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.5rem;
+    user-select: none;
+  }
+  nav .toggle-dark {
+    cursor: pointer;
+    background: var(--primary-dark);
+    border: none;
+    padding: 0.4rem 1rem;
+    font-weight: 600;
+    border-radius: 20px;
+    color: #fff;
+    transition: background-color 0.3s;
+  }
+  nav .toggle-dark.active {
+    background: #fff;
+    color: var(--primary);
+  }
+  main {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+  #searchInput {
+    width: 100%;
+    max-width: 400px;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border-radius: 30px;
+    border: 2px solid var(--primary);
+    margin-bottom: 2rem;
+    outline-offset: 2px;
+  }
+  .recipes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+    gap: 1.5rem;
+  }
+  .recipe-card {
+    background-color: var(--card-bg-light);
+    box-shadow: 0 2px 8px var(--shadow-light);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: background-color 0.3s, box-shadow 0.3s;
+  }
+  body.dark .recipe-card {
+    background-color: var(--card-bg-dark);
+    box-shadow: 0 2px 8px var(--shadow-dark);
+  }
+  .recipe-emoji {
+    font-size: 3rem;
+    user-select: none;
+  }
+  .recipe-name {
+    margin: 0.5rem 0 0.25rem;
+    font-weight: 700;
+    font-size: 1.2rem;
+    text-align: center;
+  }
+  .recipe-desc {
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    color: #555;
+  }
+  body.dark .recipe-desc {
+    color: #bbb;
+  }
+  .likes {
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    color: #ff7043;
+    font-weight: 600;
+  }
+  button {
+    cursor: pointer;
+    border: none;
+    border-radius: 30px;
+    padding: 0.4rem 1rem;
+    font-weight: 600;
+    background-color: var(--primary);
+    color: white;
+    transition: background-color 0.3s;
+  }
+  button:hover {
+    background-color: #e64a19;
+  }
+  .btn-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+  }
+  /* Modal Styles */
+  #modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+  }
+  #modalContent {
+    background-color: var(--card-bg-light);
+    color: var(--text-light);
+    max-width: 600px;
+    width: 90%;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    position: relative;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px var(--shadow-light);
+  }
+  body.dark #modalContent {
+    background-color: var(--card-bg-dark);
+    color: var(--text-dark);
+    box-shadow: 0 4px 20px var(--shadow-dark);
+  }
+  #modalClose {
+    position: absolute;
+    top: 10px; right: 15px;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: inherit;
+  }
+  #modalTitle {
+    margin-top: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    user-select: none;
+  }
+  #modalInstructions {
+    white-space: pre-line;
+    margin-top: 1rem;
+    line-height: 1.4;
+    font-size: 1rem;
+  }
+</style>
+</head>
+<body>
+  <nav>
+    <h1>SimpleTaste</h1>
+    <button id="darkModeToggle" class="toggle-dark">Dark Mode</button>
+  </nav>
+  <main>
+    <input type="text" id="searchInput" placeholder="Search recipes..." aria-label="Search recipes" />
+    <div class="recipes-grid" id="recipesGrid"></div>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" aria-modal="true" role="dialog" aria-labelledby="modalTitle" aria-describedby="modalInstructions">
+    <div id="modalContent">
+      <button id="modalClose" aria-label="Close modal">&times;</button>
+      <h2 id="modalTitle"></h2>
+      <pre id="modalInstructions"></pre>
+    </div>
+  </div>
+
+<script>
+  const recipes = [
+    { emoji: "🍕", name: "Margherita Pizza", desc: "Classic cheese & tomato pizza.", likes: 95,
+      instructions: `1. Prepare dough and tomato sauce.\n2. Spread sauce over dough.\n3. Add mozzarella and basil.\n4. Bake at 475°F (245°C) for 10-12 mins.` },
+    { emoji: "🍔", name: "Classic Burger", desc: "Beef patty with lettuce & tomato.", likes: 94,
+      instructions: `1. Form beef patties and season.\n2. Grill patties to desired doneness.\n3. Assemble burger with buns, lettuce, tomato, and condiments.\n4. Serve hot.` },
+    { emoji: "🍜", name: "Ramen", desc: "Noodles in savory broth.", likes: 93,
+      instructions: `1. Prepare broth.\n2. Cook noodles.\n3. Add toppings like egg, pork, and scallions.\n4. Serve hot.` },
+    { emoji: "🥗", name: "Greek Salad", desc: "Tomatoes, cucumber, olives & feta.", likes: 91,
+      instructions: `1. Chop tomatoes, cucumber, and olives.\n2. Add feta cheese.\n3. Dress with olive oil and oregano.\n4. Toss and serve.` },
+    { emoji: "🍣", name: "Sushi Rolls", desc: "Rice rolls with fish & veggies.", likes: 87,
+      instructions: `1. Prepare sushi rice.\n2. Place seaweed on bamboo mat.\n3. Spread rice and add fillings.\n4. Roll tightly and slice.` },
+    { emoji: "🌮", name: "Tacos", desc: "Corn tortillas with meat & salsa.", likes: 89,
+      instructions: `1. Cook meat with spices.\n2. Warm tortillas.\n3. Fill tortillas with meat, salsa, and toppings.\n4. Serve.` },
+    { emoji: "🍝", name: "Spaghetti Aglio e Olio", desc: "Pasta with garlic & olive oil.", likes: 90,
+      instructions: `1. Cook spaghetti.\n2. Sauté garlic in olive oil.\n3. Toss pasta in garlic oil.\n4. Add chili flakes and parsley.` },
+    { emoji: "🥪", name: "Grilled Cheese", desc: "Melted cheese sandwich.", likes: 88,
+      instructions: `1. Butter bread slices.\n2. Place cheese between slices.\n3. Grill until golden and cheese melts.\n4. Serve warm.` },
+    { emoji: "🍛", name: "Chicken Curry", desc: "Spicy chicken in curry sauce.", likes: 92,
+      instructions: `1. Sauté onions and spices.\n2. Add chicken and brown.\n3. Pour coconut milk and simmer.\n4. Serve with rice.` },
+    { emoji: "🥞", name: "Pancakes", desc: "Fluffy breakfast pancakes.", likes: 93,
+      instructions: `1. Mix batter ingredients.\n2. Cook pancakes on griddle.\n3. Serve with syrup or toppings.` },
+    { emoji: "🍩", name: "Donuts", desc: "Fried sweet rings.", likes: 85,
+      instructions: `1. Prepare dough.\n2. Shape and fry.\n3. Coat with sugar.\n4. Cool and serve.` },
+    { emoji: "🍤", name: "Shrimp Tempura", desc: "Battered fried shrimp.", likes: 86,
+      instructions: `1. Prepare batter.\n2. Dip shrimp.\n3. Fry until crispy.\n4. Serve with dipping sauce.` },
+    { emoji: "🥗", name: "Caesar Salad", desc: "Lettuce, croutons & dressing.", likes: 91,
+      instructions: `1. Chop lettuce.\n2. Toss with Caesar dressing.\n3. Add croutons and parmesan.\n4. Serve.` },
+    { emoji: "🍜", name: "Pho", desc: "Vietnamese noodle soup.", likes: 90,
+      instructions: `1. Prepare broth.\n2. Cook noodles.\n3. Add beef slices and herbs.\n4. Serve hot.` },
+    { emoji: "🥙", name: "Falafel Wrap", desc: "Falafel balls with veggies.", likes: 88,
+      instructions: `1. Cook falafel balls.\n2. Warm pita bread.\n3. Add falafel and veggies.\n4. Drizzle tahini and wrap.` },
+    { emoji: "🍲", name: "Vegetable Soup", desc: "Mixed veggies in broth.", likes: 91,
+      instructions: `1. Chop veggies.\n2. Simmer in broth.\n3. Season and serve hot.` },
+    { emoji: "🥩", name: "Steak", desc: "Grilled seasoned steak.", likes: 93,
+      instructions: `1. Season steak.\n2. Grill or pan-sear.\n3. Rest and serve.` },
+    { emoji: "🥯", name: "Bagel with Cream Cheese", desc: "Toasted bagel & cream cheese.", likes: 89,
+      instructions: `1. Toast bagel.\n2. Spread cream cheese.\n3. Add toppings if desired.` },
+    { emoji: "🥗", name: "Quinoa Salad", desc: "Quinoa with veggies & dressing.", likes: 88,
+      instructions: `1. Cook quinoa.\n2. Chop veggies.\n3. Mix with dressing.\n4. Serve chilled.` },
+    { emoji: "🍔", name: "Veggie Burger", desc: "Burger with plant-based patty.", likes: 87,
+      instructions: `1. Cook veggie patty.\n2. Toast bun.\n3. Assemble with toppings.\n4. Serve.` },
+    { emoji: "🍜", name: "Pad Thai", desc: "Thai stir-fried noodles.", likes: 92,
+      instructions: `1. Soak noodles.\n2. Stir-fry garlic, protein, and veggies.\n3. Add noodles and sauce.\n4. Garnish and serve.` },
+    { emoji: "🥥", name: "Coconut Rice", desc: "Rice cooked with coconut milk.", likes: 89,
+      instructions: `1. Rinse rice.\n2. Cook with coconut milk.\n3. Fluff and serve.` },
+    { emoji: "🧇", name: "Waffles", desc: "Crispy breakfast waffles.", likes: 88,
+      instructions: `1. Prepare batter.\n2. Cook in waffle iron.\n3. Serve with toppings.` },
+    { emoji: "🍟", name: "French Fries", desc: "Crispy fried potatoes.", likes: 92,
+      instructions: `1. Cut potatoes.\n2. Fry or bake.\n3. Season and serve.` },
+    { emoji: "🥜", name: "Peanut Butter Toast", desc: "Toast with peanut butter.", likes: 93,
+      instructions: `1. Toast bread.\n2. Spread peanut butter.\n3. Add banana or honey if desired.` },
+    { emoji: "🍓", name: "Fruit Yogurt Bowl", desc: "Yogurt with fresh fruit.", likes: 90,
+      instructions: `1. Spoon yogurt.\n2. Add fruit and granola.\n3. Serve fresh.` },
+    { emoji: "🥬", name: "Spinach Eggs", desc: "Scrambled eggs with spinach.", likes: 85,
+      instructions: `1. Sauté spinach.\n2. Add beaten eggs.\n3. Scramble and serve.` },
+    { emoji: "🍋", name: "Lemon Pasta", desc: "Pasta with lemon & olive oil.", likes: 86,
+      instructions: `1. Cook pasta.\n2. Toss with lemon juice and olive oil.\n3. Season and serve.` },
+    { emoji: "🧈", name: "Butter Noodles", desc: "Noodles with butter & cheese.", likes: 89,
+      instructions: `1. Cook noodles.\n2. Toss with butter and cheese.\n3. Serve warm.` },
+    { emoji: "🍄", name: "Sautéed Mushrooms", desc: "Garlic mushrooms sautéed in oil.", likes: 87,
+      instructions: `1. Heat oil.\n2. Sauté garlic.\n3. Add mushrooms.\n4. Cook until tender.` },
+    { emoji: "🍤", name: "Garlic Shrimp", desc: "Shrimp sautéed with garlic.", likes: 91,
+      instructions: `1. Heat oil.\n2. Add garlic and shrimp.\n3. Cook until shrimp are pink.\n4. Serve hot.` },
+    { emoji: "🍳", name: "Fried Eggs", desc: "Simple sunny side up eggs.", likes: 94,
+      instructions: `1. Heat pan.\n2. Crack eggs.\n3. Cook until whites set.\n4. Serve.` },
+    { emoji: "🍰", name: "Cheesecake", desc: "Creamy baked dessert.", likes: 91,
+      instructions: `1. Prepare crust.\n2. Mix cream cheese filling.\n3. Bake and chill.\n4. Serve.` },
+    { emoji: "🥗", name: "Caprese Salad", desc: "Tomato, mozzarella & basil.", likes: 89,
+      instructions: `1. Slice tomatoes and mozzarella.\n2. Arrange on plate.\n3. Add basil.\n4. Drizzle olive oil.` },
+    { emoji: "🥖", name: "Garlic Bread", desc: "Bread with garlic butter.", likes: 92,
+      instructions: `1. Mix garlic and butter.\n2. Spread on bread.\n3. Bake until golden.` },
+    { emoji: "🍜", name: "Miso Soup", desc: "Japanese miso broth with tofu.", likes: 87,
+      instructions: `1. Heat broth.\n2. Add miso paste.\n3. Add tofu and seaweed.\n4. Serve warm.` },
+    { emoji: "🌯", name: "Chicken Burrito", desc: "Tortilla wrap with chicken & beans.", likes: 90,
+      instructions: `1. Cook chicken and rice.\n2. Warm tortilla.\n3. Add ingredients.\n4. Wrap and serve.` },
+    { emoji: "🥞", name: "Fluffy Pancakes", desc: "Light and airy pancakes.", likes: 93,
+      instructions: `1. Mix ingredients.\n2. Cook pancakes on griddle.\n3. Serve with syrup.` },
+    { emoji: "🥗", name: "Tabbouleh", desc: "Parsley salad with bulgur.", likes: 87,
+      instructions: `1. Soak bulgur.\n2. Chop parsley and tomatoes.\n3. Mix with lemon juice and olive oil.\n4. Serve.` },
+    { emoji: "🥪", name: "Club Sandwich", desc: "Triple layer sandwich.", likes: 91,
+      instructions: `1. Toast bread.\n2. Layer meat, lettuce, and tomato.\n3. Add mayo.\n4. Serve.` },
+    { emoji: "🥣", name: "Smoothie Bowl", desc: "Blended fruit with toppings.", likes: 90,
+      instructions: `1. Blend fruits.\n2. Pour into bowl.\n3. Add nuts and seeds.\n4. Serve fresh.` },
+    { emoji: "🍛", name: "Beef Stew", desc: "Hearty meat stew.", likes: 89,
+      instructions: `1. Brown beef.\n2. Add veggies and broth.\n3. Simmer until tender.\n4. Serve.` },
+    { emoji: "🍚", name: "Fried Rice", desc: "Rice stir-fried with veggies.", likes: 92,
+      instructions: `1. Cook rice.\n2. Stir-fry veggies.\n3. Add rice and soy sauce.\n4. Cook and serve.` },
+    { emoji: "🌮", name: "Fish Tacos", desc: "Tacos with crispy fish.", likes: 88,
+      instructions: `1. Prepare fish.\n2. Warm tortillas.\n3. Add fish and toppings.\n4. Serve.` },
+    { emoji: "🍜", name: "Chicken Noodle Soup", desc: "Comforting chicken soup.", likes: 93,
+      instructions: `1. Boil chicken and veggies.\n2. Add noodles.\n3. Season and serve.` },
+    { emoji: "🍣", name: "Nigiri Sushi", desc: "Rice topped with fish.", likes: 90,
+      instructions: `1. Shape sushi rice.\n2. Place fish on top.\n3. Serve with soy sauce.` },
+    { emoji: "🍦", name: "Vanilla Ice Cream", desc: "Classic frozen dessert.", likes: 94,
+      instructions: `1. Mix ingredients.\n2. Freeze and churn.\n3. Serve cold.` },
+    { emoji: "🍗", name: "BBQ Chicken", desc: "Grilled chicken with sauce.", likes: 91,
+      instructions: `1. Marinate chicken.\n2. Grill.\n3. Brush with BBQ sauce.\n4. Serve.` },
+    { emoji: "🍚", name: "Sushi Bowl", desc: "Deconstructed sushi in a bowl.", likes: 89,
+      instructions: `1. Prepare sushi rice.\n2. Add fish and veggies.\n3. Drizzle sauce.\n4. Serve.` },
+    { emoji: "🥗", name: "Cobb Salad", desc: "Salad with meat, eggs & avocado.", likes: 90,
+      instructions: `1. Arrange lettuce, meat, eggs.\n2. Add avocado and dressing.\n3. Serve.` },
+    { emoji: "🍕", name: "Pepperoni Pizza", desc: "Pizza topped with pepperoni.", likes: 95,
+      instructions: `1. Prepare dough.\n2. Add sauce, cheese, and pepperoni.\n3. Bake at 475°F for 10-12 mins.` },
+    { emoji: "🥐", name: "Croissant", desc: "Flaky buttery pastry.", likes: 88,
+      instructions: `1. Prepare dough with layers.\n2. Roll and fold.\n3. Bake until golden.` },
+    { emoji: "🍚", name: "Bibimbap", desc: "Korean mixed rice bowl.", likes: 90,
+      instructions: `1. Cook rice.\n2. Prepare veggies and meat.\n3. Assemble and add sauce.\n4. Mix and serve.` },
+    { emoji: "🌯", name: "Veggie Burrito", desc: "Tortilla with beans & veggies.", likes: 89,
+      instructions: `1. Cook beans and veggies.\n2. Warm tortilla.\n3. Add fillings.\n4. Wrap and serve.` },
+    { emoji: "🥖", name: "Baguette", desc: "Classic French bread.", likes: 87,
+      instructions: `1. Prepare dough.\n2. Shape baguettes.\n3. Bake until crusty.` },
+  ];
+
+  // DOM elements
+  const recipesGrid = document.getElementById('recipesGrid');
+  const searchInput = document.getElementById('searchInput');
+  const darkModeToggle = document.getElementById('darkModeToggle');
+  const modal = document.getElementById('modal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalInstructions = document.getElementById('modalInstructions');
+  const modalClose = document.getElementById('modalClose');
+
+  // Render recipes
+  function renderRecipes(list) {
+    recipesGrid.innerHTML = '';
+    if(list.length === 0) {
+      recipesGrid.innerHTML = `<p style="grid-column:1/-1; text-align:center; font-weight:600;">No recipes found.</p>`;
+      return;
+    }
+    list.forEach((recipe, index) => {
+      const card = document.createElement('div');
+      card.className = 'recipe-card';
+      card.innerHTML = `
+        <div class="recipe-emoji" aria-hidden="true">${recipe.emoji}</div>
+        <h3 class="recipe-name">${recipe.name}</h3>
+        <p class="recipe-desc">${recipe.desc}</p>
+        <div class="likes">❤️ ${recipe.likes}% like it</div>
+        <div class="btn-group">
+          <button class="see-more-btn" data-index="${index}" aria-label="See more about ${recipe.name}">See More</button>
+          <button class="share-btn" data-index="${index}" aria-label="Share ${recipe.name}">Share</button>
+        </div>
+      `;
+      recipesGrid.appendChild(card);
+    });
+  }
+
+  // Initial render
+  renderRecipes(recipes);
+
+  // Search functionality
+  searchInput.addEventListener('input', () => {
+    const term = searchInput.value.toLowerCase().trim();
+    const filtered = recipes.filter(r => r.name.toLowerCase().includes(term));
+    renderRecipes(filtered);
+  });
+
+  // Dark mode toggle
+  darkModeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark');
+    darkModeToggle.classList.toggle('active');
+    darkModeToggle.textContent = document.body.classList.contains('dark') ? 'Light Mode' : 'Dark Mode';
+  });
+
+  // Modal open/close and share button functionality
+  recipesGrid.addEventListener('click', (e) => {
+    if(e.target.classList.contains('see-more-btn')) {
+      const idx = e.target.getAttribute('data-index');
+      const recipe = recipes[idx];
+      modalTitle.textContent = recipe.name;
+      modalInstructions.textContent = recipe.instructions;
+      modal.style.display = 'flex';
+      modal.focus();
+    }
+    if(e.target.classList.contains('share-btn')) {
+      const idx = e.target.getAttribute('data-index');
+      const recipe = recipes[idx];
+      const textToCopy = `${recipe.name} - ${recipe.desc}`;
+      if(navigator.clipboard) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          alert(`Copied to clipboard:\n${textToCopy}`);
+        }).catch(() => {
+          alert('Failed to copy to clipboard.');
+        });
+      } else {
+        // fallback prompt
+        prompt('Copy this recipe info:', textToCopy);
+      }
+    }
+  });
+
+  // Close modal
+  modalClose.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  // Close modal when clicking outside content
+  modal.addEventListener('click', (e) => {
+    if(e.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+
+  // Accessibility: close modal on Escape key
+  window.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && modal.style.display === 'flex') {
+      modal.style.display = 'none';
+    }
+  });
+</script>
+</body>
+</html>
