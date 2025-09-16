@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="icon" href="1f354.png" type="image/png" sizes="32x32">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SimpleTaste — Best Simple Recipes</title>
@@ -43,7 +42,7 @@
     font-size: 1.5rem;
     user-select: none;
   }
-  nav .toggle-dark {
+  nav .toggle-dark, nav .toggle-lang {
     cursor: pointer;
     background: var(--primary-dark);
     border: none;
@@ -52,6 +51,7 @@
     border-radius: 20px;
     color: #fff;
     transition: background-color 0.3s;
+    margin-left: 0.5rem;
   }
   nav .toggle-dark.active {
     background: #fff;
@@ -187,8 +187,11 @@
 </head>
 <body>
   <nav>
-    <h1>SimpleTaste</h1>
-    <button id="darkModeToggle" class="toggle-dark">Dark Mode</button>
+    <h1 id="siteTitle">SimpleTaste</h1>
+    <div>
+      <button id="darkModeToggle" class="toggle-dark">Dark Mode</button>
+      <button id="langToggle" class="toggle-lang">🇬🇧 EN</button>
+    </div>
   </nav>
   <main>
     <input type="text" id="searchInput" placeholder="Search recipes..." aria-label="Search recipes" />
@@ -205,133 +208,120 @@
   </div>
 
 <script>
+  const translations = {
+    en: {
+      siteTitle: "SimpleTaste",
+      dark: "Dark Mode",
+      light: "Light Mode",
+      seeMore: "See More",
+      share: "Share",
+      searchPlaceholder: "Search recipes...",
+      noResults: "No recipes found.",
+      likeText: "% like it"
+    },
+    mk: {
+      siteTitle: "SimpleTaste",
+      dark: "Темна Тема",
+      light: "Светла Тема",
+      seeMore: "Види Повеќе",
+      share: "Сподели",
+      searchPlaceholder: "Пребарај рецепти...",
+      noResults: "Нема пронајдени рецепти.",
+      likeText: "% го сакаат"
+    }
+  };
+
+  let currentLang = 'en';
+
   const recipes = [
-    { emoji: "🍕", name: "Margherita Pizza", desc: "Classic cheese & tomato pizza.", likes: 95,
-      instructions: `1. Prepare dough and tomato sauce.\n2. Spread sauce over dough.\n3. Add mozzarella and basil.\n4. Bake at 475°F (245°C) for 10-12 mins.` },
-    { emoji: "🍔", name: "Classic Burger", desc: "Beef patty with lettuce & tomato.", likes: 94,
-      instructions: `1. Form beef patties and season.\n2. Grill patties to desired doneness.\n3. Assemble burger with buns, lettuce, tomato, and condiments.\n4. Serve hot.` },
-    { emoji: "🍜", name: "Ramen", desc: "Noodles in savory broth.", likes: 93,
-      instructions: `1. Prepare broth.\n2. Cook noodles.\n3. Add toppings like egg, pork, and scallions.\n4. Serve hot.` },
-    { emoji: "🥗", name: "Greek Salad", desc: "Tomatoes, cucumber, olives & feta.", likes: 91,
-      instructions: `1. Chop tomatoes, cucumber, and olives.\n2. Add feta cheese.\n3. Dress with olive oil and oregano.\n4. Toss and serve.` },
-    { emoji: "🍣", name: "Sushi Rolls", desc: "Rice rolls with fish & veggies.", likes: 87,
-      instructions: `1. Prepare sushi rice.\n2. Place seaweed on bamboo mat.\n3. Spread rice and add fillings.\n4. Roll tightly and slice.` },
-    { emoji: "🌮", name: "Tacos", desc: "Corn tortillas with meat & salsa.", likes: 89,
-      instructions: `1. Cook meat with spices.\n2. Warm tortillas.\n3. Fill tortillas with meat, salsa, and toppings.\n4. Serve.` },
-    { emoji: "🍝", name: "Spaghetti Aglio e Olio", desc: "Pasta with garlic & olive oil.", likes: 90,
-      instructions: `1. Cook spaghetti.\n2. Sauté garlic in olive oil.\n3. Toss pasta in garlic oil.\n4. Add chili flakes and parsley.` },
-    { emoji: "🥪", name: "Grilled Cheese", desc: "Melted cheese sandwich.", likes: 88,
-      instructions: `1. Butter bread slices.\n2. Place cheese between slices.\n3. Grill until golden and cheese melts.\n4. Serve warm.` },
-    { emoji: "🍛", name: "Chicken Curry", desc: "Spicy chicken in curry sauce.", likes: 92,
-      instructions: `1. Sauté onions and spices.\n2. Add chicken and brown.\n3. Pour coconut milk and simmer.\n4. Serve with rice.` },
-    { emoji: "🥞", name: "Pancakes", desc: "Fluffy breakfast pancakes.", likes: 93,
-      instructions: `1. Mix batter ingredients.\n2. Cook pancakes on griddle.\n3. Serve with syrup or toppings.` },
-    { emoji: "🍩", name: "Donuts", desc: "Fried sweet rings.", likes: 85,
-      instructions: `1. Prepare dough.\n2. Shape and fry.\n3. Coat with sugar.\n4. Cool and serve.` },
-    { emoji: "🍤", name: "Shrimp Tempura", desc: "Battered fried shrimp.", likes: 86,
-      instructions: `1. Prepare batter.\n2. Dip shrimp.\n3. Fry until crispy.\n4. Serve with dipping sauce.` },
-    { emoji: "🥗", name: "Caesar Salad", desc: "Lettuce, croutons & dressing.", likes: 91,
-      instructions: `1. Chop lettuce.\n2. Toss with Caesar dressing.\n3. Add croutons and parmesan.\n4. Serve.` },
-    { emoji: "🍜", name: "Pho", desc: "Vietnamese noodle soup.", likes: 90,
-      instructions: `1. Prepare broth.\n2. Cook noodles.\n3. Add beef slices and herbs.\n4. Serve hot.` },
-    { emoji: "🥙", name: "Falafel Wrap", desc: "Falafel balls with veggies.", likes: 88,
-      instructions: `1. Cook falafel balls.\n2. Warm pita bread.\n3. Add falafel and veggies.\n4. Drizzle tahini and wrap.` },
-    { emoji: "🍲", name: "Vegetable Soup", desc: "Mixed veggies in broth.", likes: 91,
-      instructions: `1. Chop veggies.\n2. Simmer in broth.\n3. Season and serve hot.` },
-    { emoji: "🥩", name: "Steak", desc: "Grilled seasoned steak.", likes: 93,
-      instructions: `1. Season steak.\n2. Grill or pan-sear.\n3. Rest and serve.` },
-    { emoji: "🥯", name: "Bagel with Cream Cheese", desc: "Toasted bagel & cream cheese.", likes: 89,
-      instructions: `1. Toast bagel.\n2. Spread cream cheese.\n3. Add toppings if desired.` },
-    { emoji: "🥗", name: "Quinoa Salad", desc: "Quinoa with veggies & dressing.", likes: 88,
-      instructions: `1. Cook quinoa.\n2. Chop veggies.\n3. Mix with dressing.\n4. Serve chilled.` },
-    { emoji: "🍔", name: "Veggie Burger", desc: "Burger with plant-based patty.", likes: 87,
-      instructions: `1. Cook veggie patty.\n2. Toast bun.\n3. Assemble with toppings.\n4. Serve.` },
-    { emoji: "🍜", name: "Pad Thai", desc: "Thai stir-fried noodles.", likes: 92,
-      instructions: `1. Soak noodles.\n2. Stir-fry garlic, protein, and veggies.\n3. Add noodles and sauce.\n4. Garnish and serve.` },
-    { emoji: "🥥", name: "Coconut Rice", desc: "Rice cooked with coconut milk.", likes: 89,
-      instructions: `1. Rinse rice.\n2. Cook with coconut milk.\n3. Fluff and serve.` },
-    { emoji: "🧇", name: "Waffles", desc: "Crispy breakfast waffles.", likes: 88,
-      instructions: `1. Prepare batter.\n2. Cook in waffle iron.\n3. Serve with toppings.` },
-    { emoji: "🍟", name: "French Fries", desc: "Crispy fried potatoes.", likes: 92,
-      instructions: `1. Cut potatoes.\n2. Fry or bake.\n3. Season and serve.` },
-    { emoji: "🥜", name: "Peanut Butter Toast", desc: "Toast with peanut butter.", likes: 93,
-      instructions: `1. Toast bread.\n2. Spread peanut butter.\n3. Add banana or honey if desired.` },
-    { emoji: "🍓", name: "Fruit Yogurt Bowl", desc: "Yogurt with fresh fruit.", likes: 90,
-      instructions: `1. Spoon yogurt.\n2. Add fruit and granola.\n3. Serve fresh.` },
-    { emoji: "🥬", name: "Spinach Eggs", desc: "Scrambled eggs with spinach.", likes: 85,
-      instructions: `1. Sauté spinach.\n2. Add beaten eggs.\n3. Scramble and serve.` },
-    { emoji: "🍋", name: "Lemon Pasta", desc: "Pasta with lemon & olive oil.", likes: 86,
-      instructions: `1. Cook pasta.\n2. Toss with lemon juice and olive oil.\n3. Season and serve.` },
-    { emoji: "🧈", name: "Butter Noodles", desc: "Noodles with butter & cheese.", likes: 89,
-      instructions: `1. Cook noodles.\n2. Toss with butter and cheese.\n3. Serve warm.` },
-    { emoji: "🍄", name: "Sautéed Mushrooms", desc: "Garlic mushrooms sautéed in oil.", likes: 87,
-      instructions: `1. Heat oil.\n2. Sauté garlic.\n3. Add mushrooms.\n4. Cook until tender.` },
-    { emoji: "🍤", name: "Garlic Shrimp", desc: "Shrimp sautéed with garlic.", likes: 91,
-      instructions: `1. Heat oil.\n2. Add garlic and shrimp.\n3. Cook until shrimp are pink.\n4. Serve hot.` },
-    { emoji: "🍳", name: "Fried Eggs", desc: "Simple sunny side up eggs.", likes: 94,
-      instructions: `1. Heat pan.\n2. Crack eggs.\n3. Cook until whites set.\n4. Serve.` },
-    { emoji: "🍰", name: "Cheesecake", desc: "Creamy baked dessert.", likes: 91,
-      instructions: `1. Prepare crust.\n2. Mix cream cheese filling.\n3. Bake and chill.\n4. Serve.` },
-    { emoji: "🥗", name: "Caprese Salad", desc: "Tomato, mozzarella & basil.", likes: 89,
-      instructions: `1. Slice tomatoes and mozzarella.\n2. Arrange on plate.\n3. Add basil.\n4. Drizzle olive oil.` },
-    { emoji: "🥖", name: "Garlic Bread", desc: "Bread with garlic butter.", likes: 92,
-      instructions: `1. Mix garlic and butter.\n2. Spread on bread.\n3. Bake until golden.` },
-    { emoji: "🍜", name: "Miso Soup", desc: "Japanese miso broth with tofu.", likes: 87,
-      instructions: `1. Heat broth.\n2. Add miso paste.\n3. Add tofu and seaweed.\n4. Serve warm.` },
-    { emoji: "🌯", name: "Chicken Burrito", desc: "Tortilla wrap with chicken & beans.", likes: 90,
-      instructions: `1. Cook chicken and rice.\n2. Warm tortilla.\n3. Add ingredients.\n4. Wrap and serve.` },
-    { emoji: "🥞", name: "Fluffy Pancakes", desc: "Light and airy pancakes.", likes: 93,
-      instructions: `1. Mix ingredients.\n2. Cook pancakes on griddle.\n3. Serve with syrup.` },
-    { emoji: "🥗", name: "Tabbouleh", desc: "Parsley salad with bulgur.", likes: 87,
-      instructions: `1. Soak bulgur.\n2. Chop parsley and tomatoes.\n3. Mix with lemon juice and olive oil.\n4. Serve.` },
-    { emoji: "🥪", name: "Club Sandwich", desc: "Triple layer sandwich.", likes: 91,
-      instructions: `1. Toast bread.\n2. Layer meat, lettuce, and tomato.\n3. Add mayo.\n4. Serve.` },
-    { emoji: "🥣", name: "Smoothie Bowl", desc: "Blended fruit with toppings.", likes: 90,
-      instructions: `1. Blend fruits.\n2. Pour into bowl.\n3. Add nuts and seeds.\n4. Serve fresh.` },
-    { emoji: "🍛", name: "Beef Stew", desc: "Hearty meat stew.", likes: 89,
-      instructions: `1. Brown beef.\n2. Add veggies and broth.\n3. Simmer until tender.\n4. Serve.` },
-    { emoji: "🍚", name: "Fried Rice", desc: "Rice stir-fried with veggies.", likes: 92,
-      instructions: `1. Cook rice.\n2. Stir-fry veggies.\n3. Add rice and soy sauce.\n4. Cook and serve.` },
-    { emoji: "🌮", name: "Fish Tacos", desc: "Tacos with crispy fish.", likes: 88,
-      instructions: `1. Prepare fish.\n2. Warm tortillas.\n3. Add fish and toppings.\n4. Serve.` },
-    { emoji: "🍜", name: "Chicken Noodle Soup", desc: "Comforting chicken soup.", likes: 93,
-      instructions: `1. Boil chicken and veggies.\n2. Add noodles.\n3. Season and serve.` },
-    { emoji: "🍣", name: "Nigiri Sushi", desc: "Rice topped with fish.", likes: 90,
-      instructions: `1. Shape sushi rice.\n2. Place fish on top.\n3. Serve with soy sauce.` },
-    { emoji: "🍦", name: "Vanilla Ice Cream", desc: "Classic frozen dessert.", likes: 94,
-      instructions: `1. Mix ingredients.\n2. Freeze and churn.\n3. Serve cold.` },
-    { emoji: "🍗", name: "BBQ Chicken", desc: "Grilled chicken with sauce.", likes: 91,
-      instructions: `1. Marinate chicken.\n2. Grill.\n3. Brush with BBQ sauce.\n4. Serve.` },
-    { emoji: "🍚", name: "Sushi Bowl", desc: "Deconstructed sushi in a bowl.", likes: 89,
-      instructions: `1. Prepare sushi rice.\n2. Add fish and veggies.\n3. Drizzle sauce.\n4. Serve.` },
-    { emoji: "🥗", name: "Cobb Salad", desc: "Salad with meat, eggs & avocado.", likes: 90,
-      instructions: `1. Arrange lettuce, meat, eggs.\n2. Add avocado and dressing.\n3. Serve.` },
-    { emoji: "🍕", name: "Pepperoni Pizza", desc: "Pizza topped with pepperoni.", likes: 95,
-      instructions: `1. Prepare dough.\n2. Add sauce, cheese, and pepperoni.\n3. Bake at 475°F for 10-12 mins.` },
-    { emoji: "🥐", name: "Croissant", desc: "Flaky buttery pastry.", likes: 88,
-      instructions: `1. Prepare dough with layers.\n2. Roll and fold.\n3. Bake until golden.` },
-    { emoji: "🍚", name: "Bibimbap", desc: "Korean mixed rice bowl.", likes: 90,
-      instructions: `1. Cook rice.\n2. Prepare veggies and meat.\n3. Assemble and add sauce.\n4. Mix and serve.` },
-    { emoji: "🌯", name: "Veggie Burrito", desc: "Tortilla with beans & veggies.", likes: 89,
-      instructions: `1. Cook beans and veggies.\n2. Warm tortilla.\n3. Add fillings.\n4. Wrap and serve.` },
-    { emoji: "🥖", name: "Baguette", desc: "Classic French bread.", likes: 87,
-      instructions: `1. Prepare dough.\n2. Shape baguettes.\n3. Bake until crusty.` },
+    // original recipes (all of them)
+    { emoji: "🍕", name: { en: "Margherita Pizza", mk: "Маргарита Пица" }, desc: { en: "Classic cheese & tomato pizza.", mk: "Класична пица со сирење и домат." }, likes: 95, instructions: { en: `1. Prepare dough and tomato sauce.\n2. Spread sauce over dough.\n3. Add mozzarella and basil.\n4. Bake at 475°F (245°C) for 10-12 mins.`, mk: `1. Подгответе тесто и доматен сос.\n2. Распределете го сосот врз тестото.\n3. Додадете моцарела и босилек.\n4. Печете на 245°C 10-12 минути.` } },
+    { emoji: "🍔", name: { en: "Classic Burger", mk: "Класичен Бургер" }, desc: { en: "Beef patty with lettuce & tomato.", mk: "Говедско ќофтињо со марула и домат." }, likes: 94, instructions: { en: `1. Form beef patties and season.\n2. Grill patties to desired doneness.\n3. Assemble burger with buns, lettuce, tomato, and condiments.\n4. Serve hot.`, mk: `1. Формирајте ќофтиња и зачинете ги.\n2. Печете ги на скара.\n3. Соберете бургер со лепче, марула и домат.\n4. Послужете топло.` } },
+    { emoji: "🍜", name: { en: "Ramen", mk: "Рамен" }, desc: { en: "Noodles in savory broth.", mk: "Нудли во вкусен чорбаст сос." }, likes: 93, instructions: { en: `1. Prepare broth.\n2. Cook noodles.\n3. Add toppings like egg, pork, and scallions.\n4. Serve hot.`, mk: `1. Подгответе чорба.\n2. Сварете нудли.\n3. Додадете јајце, свинско и млад кромид.\n4. Послужете топло.` } },
+    { emoji: "🥗", name: { en: "Greek Salad", mk: "Грчка Салата" }, desc: { en: "Tomatoes, cucumber, olives & feta.", mk: "Домат, краставица, маслинки и фета." }, likes: 91, instructions: { en: `1. Chop tomatoes, cucumber, and olives.\n2. Add feta cheese.\n3. Dress with olive oil and oregano.\n4. Toss and serve.`, mk: `1. Исечкајте домат, краставица и маслинки.\n2. Додадете фета сирење.\n3. Прелијте со маслиново масло и оригано.\n4. Измешајте и послужете.` } },
+    { emoji: "🍣", name: { en: "Sushi Rolls", mk: "Суши Ролни" }, desc: { en: "Rice rolls with fish & veggies.", mk: "Суши ролни со риба и зеленчук." }, likes: 87, instructions: { en: `1. Prepare sushi rice.\n2. Place seaweed on bamboo mat.\n3. Spread rice and add fillings.\n4. Roll tightly and slice.`, mk: `1. Подгответе суши ориз.\n2. Ставете нори на подлога.\n3. Распределете ориз и фил.\n4. Свиткајте и исечете.` } },
+    { emoji: "🌮", name: { en: "Tacos", mk: "Такос" }, desc: { en: "Corn tortillas with meat & salsa.", mk: "Тортиљи со месо и салса." }, likes: 89, instructions: { en: `1. Cook meat with spices.\n2. Warm tortillas.\n3. Fill tortillas with meat, salsa, and toppings.\n4. Serve.`, mk: `1. Гответе месо со зачини.\n2. Загрејте тортиљи.\n3. Наполнете со месо, салса и додаци.\n4. Послужете.` } },
+    { emoji: "🍝", name: { en: "Spaghetti Aglio e Olio", mk: "Шпагети Аљо и Олио" }, desc: { en: "Pasta with garlic & olive oil.", mk: "Паста со лук и маслиново масло." }, likes: 90, instructions: { en: `1. Cook spaghetti.\n2. Sauté garlic in olive oil.\n3. Toss pasta in garlic oil.\n4. Add chili flakes and parsley.`, mk: `1. Сварете шпагети.\n2. На маслиново масло испржете лук.\n3. Измешајте паста.\n4. Додадете чили и магдонос.` } },
+    { emoji: "🥪", name: { en: "Grilled Cheese", mk: "Грил Чиз" }, desc: { en: "Melted cheese sandwich.", mk: "Сандвич со растопено сирење." }, likes: 88, instructions: { en: `1. Butter bread slices.\n2. Place cheese between slices.\n3. Grill until golden and cheese melts.\n4. Serve warm.`, mk: `1. Намазнете леб.\n2. Ставете сирење помеѓу парчињата.\n3. Печете додека добие златна боја и сирењето се растопи.\n4. Послужете топло.` } },
+    { emoji: "🍛", name: { en: "Chicken Curry", mk: "Пилешко Кари" }, desc: { en: "Spicy chicken in curry sauce.", mk: "Пикантно пилешко во кари сос." }, likes: 92, instructions: { en: `1. Sauté onions and spices.\n2. Add chicken and brown.\n3. Pour coconut milk and simmer.\n4. Serve with rice.`, mk: `1. Пржете кромид и зачини.\n2. Додадете пилешко и запечете.\n3. Истурете кокосово млеко и динстајте.\n4. Послужете со ориз.` } },
+    { emoji: "🥞", name: { en: "Pancakes", mk: "Палачинки" }, desc: { en: "Fluffy breakfast pancakes.", mk: "Пухкави појадок палачинки." }, likes: 93, instructions: { en: `1. Mix batter ingredients.\n2. Cook pancakes on griddle.\n3. Serve with syrup or toppings.`, mk: `1. Измешајте состојки.\n2. Печете на тава.\n3. Послужете со сируп или топинзи.` } },
+    { emoji: "🍩", name: { en: "Donuts", mk: "Крофни" }, desc: { en: "Fried sweet rings.", mk: "Пржени слатки прстени." }, likes: 85, instructions: { en: `1. Prepare dough.\n2. Shape and fry.\n3. Coat with sugar.\n4. Cool and serve.`, mk: `1. Подгответе тесто.\n2. Формирајте и пржете.\n3. Обложете со шеќер.\n4. Оладете и послужете.` } },
+    { emoji: "🍤", name: { en: "Shrimp Tempura", mk: "Шримп Темпура" }, desc: { en: "Battered fried shrimp.", mk: "Пржени шримпи во преливка." }, likes: 86, instructions: { en: `1. Prepare batter.\n2. Dip shrimp.\n3. Fry until crispy.\n4. Serve with dipping sauce.`, mk: `1. Подгответе преливка.\n2. Помешајте шримпи.\n3. Пржете додека не стане крцкаво.\n4. Послужете со сос.` } },
+    { emoji: "🥗", name: { en: "Caesar Salad", mk: "Цезар Салата" }, desc: { en: "Lettuce, croutons & dressing.", mk: "Марула, крутони и дресинг." }, likes: 91, instructions: { en: `1. Chop lettuce.\n2. Toss with Caesar dressing.\n3. Add croutons and parmesan.\n4. Serve.`, mk: `1. Исечкајте марула.\n2. Помешајте со Цезар дресинг.\n3. Додадете крутони и пармезан.\n4. Послужете.` } },
+    { emoji: "🍜", name: { en: "Pho", mk: "Фо" }, desc: { en: "Vietnamese noodle soup.", mk: "Виетнамска нудл супа." }, likes: 90, instructions: { en: `1. Prepare broth.\n2. Cook noodles.\n3. Add beef slices and herbs.\n4. Serve hot.`, mk: `1. Подгответе чорба.\n2. Сварете нудли.\n3. Додадете говеждо и зачинско билје.\n4. Послужете топло.` } },
+    { emoji: "🥙", name: { en: "Falafel Wrap", mk: "Фалафел Ролна" }, desc: { en: "Falafel balls with veggies.", mk: "Фалафел топчиња со зеленчук." }, likes: 88, instructions: { en: `1. Cook falafel balls.\n2. Warm pita bread.\n3. Add falafel and veggies.\n4. Drizzle tahini and wrap.`, mk: `1. Пригответе фалафел.\n2. Загрејте пита леб.\n3. Додадете фалафел и зеленчук.\n4. Истурете тахини и завиткајте.` } },
+    { emoji: "🍲", name: { en: "Vegetable Soup", mk: "Супа од Зеленчук" }, desc: { en: "Mixed veggies in broth.", mk: "Мешавина од зеленчук во чорба." }, likes: 91, instructions: { en: `1. Chop veggies.\n2. Simmer in broth.\n3. Season and serve hot.`, mk: `1. Исечкајте зеленчук.\n2. Кувајте во чорба.\n3. Зајчинете и послужете топло.` } },
+    { emoji: "🥩", name: { en: "Steak", mk: "Стек" }, desc: { en: "Grilled seasoned steak.", mk: "Грилован стек со зачини." }, likes: 93, instructions: { en: `1. Season steak.\n2. Grill or pan-sear.\n3. Rest and serve.`, mk: `1. Зачинете стек.\n2. Грилувајте или пржете.\n3. Оставете го да одмори и послужете.` } },
+    { emoji: "🥯", name: { en: "Bagel with Cream Cheese", mk: "Бејгел со Крем Сирење" }, desc: { en: "Toasted bagel & cream cheese.", mk: "Пржен бејгел и крем сирење." }, likes: 89, instructions: { en: `1. Toast bagel.\n2. Spread cream cheese.\n3. Add toppings if desired.`, mk: `1. Пржете бејгел.\n2. Намачкајте крем сирење.\n3. Додадете додаци по желба.` } },
+    { emoji: "🥗", name: { en: "Quinoa Salad", mk: "Киноа Салата" }, desc: { en: "Quinoa with veggies & dressing.", mk: "Киноа со зеленчук и дресинг." }, likes: 88, instructions: { en: `1. Cook quinoa.\n2. Chop veggies.\n3. Mix with dressing.\n4. Serve chilled.`, mk: `1. Сварете киноа.\n2. Исечкајте зеленчук.\n3. Измешајте со дресинг.\n4. Послужете ладно.` } },
+    { emoji: "🍔", name: { en: "Veggie Burger", mk: "Валеџи Бургер" }, desc: { en: "Burger with plant-based patty.", mk: "Бургер со растителен котлет." }, likes: 87, instructions: { en: `1. Cook veggie patty.\n2. Toast bun.\n3. Assemble with toppings.\n4. Serve.`, mk: `1. Пригответе растителен котлет.\n2. Пржете лепче.\n3. Соберете со додаци.\n4. Послужете.` } },
+    { emoji: "🍜", name: { en: "Pad Thai", mk: "Пад Тај" }, desc: { en: "Thai stir-fried noodles.", mk: "Тајландски нудли пржени." }, likes: 92, instructions: { en: `1. Soak noodles.\n2. Stir-fry garlic, protein, and veggies.\n3. Add noodles and sauce.\n4. Garnish and serve.`, mk: `1. Натопете нудли.\n2. Пржете лук, протеин и зеленчук.\n3. Додадете нудли и сос.\n4. Украсете и послужете.` } },
+    { emoji: "🥥", name: { en: "Coconut Rice", mk: "Кокосов Ориз" }, desc: { en: "Rice cooked with coconut milk.", mk: "Ориз варен со кокосово млеко." }, likes: 89, instructions: { en: `1. Rinse rice.\n2. Cook with coconut milk.\n3. Fluff and serve.`, mk: `1. Исчистете ориз.\n2. Варете со кокосово млеко.\n3. Раздвижете и послужете.` } },
+    { emoji: "🧇", name: { en: "Waffles", mk: "Вафли" }, desc: { en: "Crispy breakfast waffles.", mk: "Пржени појадочни вафли." }, likes: 88, instructions: { en: `1. Prepare batter.\n2. Cook in waffle iron.\n3. Serve with toppings.`, mk: `1. Подгответе смеса.\n2. Печете во вафлица.\n3. Послужете со додаци.` } },
+    { emoji: "🍟", name: { en: "French Fries", mk: "Француски Помфрит" }, desc: { en: "Crispy fried potatoes.", mk: "Крцкави пржени компири." }, likes: 92, instructions: { en: `1. Cut potatoes.\n2. Fry or bake.\n3. Season and serve.`, mk: `1. Исечкајте компири.\n2. Пржете или печете.\n3. Зачинете и послужете.` } },
+    { emoji: "🥜", name: { en: "Peanut Butter Toast", mk: "Тост со Паста од Кикирики" }, desc: { en: "Toast with peanut butter.", mk: "Тост со путер од кикирики." }, likes: 93, instructions: { en: `1. Toast bread.\n2. Spread peanut butter.\n3. Add banana or honey if desired.`, mk: `1. Пржете тост.\n2. Намачкајте паста од кикирики.\n3. Додадете банана или мед ако сакате.` } },
+    { emoji: "🍓", name: { en: "Fruit Yogurt Bowl", mk: "Чинија Јогурт и Овошје" }, desc: { en: "Yogurt with fresh fruit.", mk: "Јогурт со свежо овошје." }, likes: 90, instructions: { en: `1. Spoon yogurt.\n2. Add fruit and granola.\n3. Serve fresh.`, mk: `1. Ставете јогурт.\n2. Додадете овошје и гранола.\n3. Послужете свежо.` } },
+    { emoji: "🥬", name: { en: "Spinach Eggs", mk: "Јајца и Спанаќ" }, desc: { en: "Scrambled eggs with spinach.", mk: "Пржени јајца со спанаќ." }, likes: 85, instructions: { en: `1. Sauté spinach.\n2. Add beaten eggs.\n3. Scramble and serve.`, mk: `1. Пржете спанаќ.\n2. Додадете матени јајца.\n3. Измешајте и послужете.` } },
+    { emoji: "🍋", name: { en: "Lemon Pasta", mk: "Лимонска Паста" }, desc: { en: "Pasta with lemon & olive oil.", mk: "Паста со лимон и маслиново масло." }, lovesOrLikes: null, likes: 86, instructions: { en: `1. Cook pasta.\n2. Toss with lemon juice and olive oil.\n3. Season and serve.`, mk: `1. Сварете паста.\n2. Протресете со лимон и маслиново масло.\n3. Зачинете и послужете.` } },  
+    { emoji: "🧈", name: { en: "Butter Noodles", mk: "Нудли со Масло и Сирење" }, desc: { en: "Noodles with butter & cheese.", mk: "Нудли со масло и сирење." }, likes: 89, instructions: { en: `1. Cook noodles.\n2. Toss with butter and cheese.\n3. Serve warm.`, mk: `1. Сварете нудли.\n2. Протресете со масло и сирење.\n3. Послужете топло.` } },
+    { emoji: "🍄", name: { en: "Sautéed Mushrooms", mk: "Пржени Печурки" }, desc: { en: "Garlic mushrooms sautéed in oil.", mk: "Печурки со лук пржени на масло." }, likes: 87, instructions: { en: `1. Heat oil.\n2. Sauté garlic.\n3. Add mushrooms.\n4. Cook until tender.`, mk: `1. Загрејте масло.\n2. Пржете лук.\n3. Додадете печурки.\n4. Гответе додека не омекнат.` } },
+    { emoji: "🍤", name: { en: "Garlic Shrimp", mk: "Чешне Шримпи" }, desc: { en: "Shrimp sautéed with garlic.", mk: "Шримпи пржени со лук." }, likes: 91, instructions: { en: `1. Heat oil.\n2. Add garlic and shrimp.\n3. Cook until shrimp are pink.\n4. Serve hot.`, mk: `1. Загрејте масло.\n2. Додадете лук и шримпи.\n3. Гответе додека не станат розеви.\n4. Послужете топло.` } },
+    { emoji: "🍳", name: { en: "Fried Eggs", mk: "Печени Јајца" }, desc: { en: "Simple sunny side up eggs.", mk: "Пржени јајца од едниот страна." }, likes: 94, instructions: { en: `1. Heat pan.\n2. Crack eggs.\n3. Cook until whites set.\n4. Serve.`, mk: `1. Загрејте тава.\n2. Счупете јајца.\n3. Гответе додека белците не се стегнат.\n4. Послужете.` } },
+    { emoji: "🍰", name: { en: "Cheesecake", mk: "Чизкејк" }, desc: { en: "Creamy baked dessert.", mk: "Кремаст печен десерт." }, likes: 91, instructions: { en: `1. Prepare crust.\n2. Mix cream cheese filling.\n3. Bake and chill.\n4. Serve.`, mk: `1. Подгответе кора.\n2. Измешајте фил со крем сирење.\n3. Печете и оладете.\n4. Послужете.` } },
+    { emoji: "🥗", name: { en: "Caprese Salad", mk: "Капрезе Салата" }, desc: { en: "Tomato, mozzarella & basil.", mk: "Домат, моцарела и босилек." }, likes: 89, instructions: { en: `1. Slice tomatoes and mozzarella.\n2. Arrange on plate.\n3. Add basil.\n4. Drizzle olive oil.`, mk: `1. Исечете домати и моцарела.\n2. Наредете на чинија.\n3. Додадете босилек.\n4. Прелијте маслиново масло.` } },
+    { emoji: "🥖", name: { en: "Garlic Bread", mk: "Чеснов Леб" }, desc: { in: "Bread with garlic butter.", mk: "Леб со чеснов путер." }, likes: 92, instructions: { en: `1. Mix garlic and butter.\n2. Spread on bread.\n3. Bake until golden.`, mk: `1. Измешајте лук и путер.\n2. Намачкајте на леб.\n3. Печете додека не стане златна боја.` } },
+    { emoji: "🍜", name: { en: "Miso Soup", mk: "Мисо Супа" }, desc: { en: "Japanese miso broth with tofu.", mk: "Јапонска мисо чорба со тофу." }, likes: 87, instructions: { en: `1. Heat broth.\n2. Add miso paste.\n3. Add tofu and seaweed.\n4. Serve warm.`, mk: `1. Загрејте чорба.\n2. Додадете мисо паста.\n3. Додадете тофу и морска зелка.\n4. Послужете топло.` } },
+    { emoji: "🌯", name: { en: "Chicken Burrito", mk: "Пилешки Бурито" }, desc: { en: "Tortilla wrap with chicken & beans.", mk: "Лепче со пилешко и грав." }, likes: 90, instructions: { en: `1. Cook chicken and rice.\n2. Warm tortilla.\n3. Add ingredients.\n4. Wrap and serve.`, mk: `1. Пригответе пилешко и ориз.\n2. Загрејте леб.\n3. Додадете состојки.\n4. Завиткајте и послужете.` } },
+    { emoji: "🥞", name: { en: "Fluffy Pancakes", mk: "Пухкави Палачинки" }, desc: { en: "Light and airy pancakes.", mk: "Лесни и воздушести палачинки." }, likes: 93, instructions: { en: `1. Mix ingredients.\n2. Cook pancakes on griddle.\n3. Serve with syrup.`, mk: `1. Измешајте состојки.\n2. Печете на тава.\n3. Послужете со сируп.` } },
+    { emoji: "🥗", name: { en: "Tabbouleh", mk: "Табуле" }, desc: { en: "Parsley salad with bulgur.", mk: "Салата од магдонос и булгур." }, likes: 87, instructions: { en: `1. Soak bulgur.\n2. Chop parsley and tomatoes.\n3. Mix with lemon juice and olive oil.\n4. Serve.`, mk: `1. Натопете булгур.\n2. Исечкајте магдонос и домати.\n3. Измешајте со лимон сок и маслиново масло.\n4. Послужете.` } },
+    { emoji: "🥪", name: { en: "Club Sandwich", mk: "Клаб Сендвич" }, desc: { en: "Triple layer sandwich.", mk: "Тростепенски сендвич." }, likes: 91, instructions: { en: `1. Toast bread.\n2. Layer meat, lettuce, and tomato.\n3. Add mayo.\n4. Serve.`, mk: `1. Пржете леб.\n2. Наредете месо, марула и домат.\n3. Додадете мајонез.\n4. Послужете.` } },
+    { emoji: "🥣", name: { en: "Smoothie Bowl", mk: "Смути Чинија" }, desc: { en: "Blended fruit with toppings.", mk: "Блендирано овошје со додатоци." }, likes: 90, instructions: { en: `1. Blend fruits.\n2. Pour into bowl.\n3. Add nuts and seeds.\n4. Serve fresh.`, mk: `1. Изблендирајте овошје.\n2. Истурете во чинија.\n3. Додадете ореви и семки.\n4. Послужете свежо.` } },
+    { emoji: "🍛", name: { en: "Beef Stew", mk: "Говедски Гулаш" }, desc: { en: "Hearty meat stew.", mk: "Срдечен говедски гулаш." }, likes: 89, instructions: { en: `1. Brown beef.\n2. Add veggies and broth.\n3. Simmer until tender.\n4. Serve.`, mk: `1. Пржете говедско.\n2. Додадете зеленчук и чорба.\n3. Динстајте додека не омекне.\n4. Послужете.` } },
+    { emoji: "🍚", name: { en: "Fried Rice", mk: "Пржен Ориз" }, desc: { en: "Rice stir-fried with veggies.", mk: "Ориз пржен со зеленчук." }, likes: 92, instructions: { en: `1. Cook rice.\n2. Stir-fry veggies.\n3. Add rice and soy sauce.\n4. Cook and serve.`, mk: `1. Сварете ориз.\n2. Пржете зеленчук.\n3. Додадете ориз и соја сос.\n4. Гответе и послужете.` } },
+    { emoji: "🌮", name: { en: "Fish Tacos", mk: "Рибни Такос" }, desc: { en: "Tacos with crispy fish.", mk: "Такос со крцкава риба." }, likes: 88, instructions: { en: `1. Prepare fish.\n2. Warm tortillas.\n3. Add fish and toppings.\n4. Serve.`, mk: `1. Пригответе риба.\n2. Загрејте тортиљи.\n3. Додадете риба и додаци.\n4. Послужете.` } },
+    { emoji: "🍜", name: { en: "Chicken Noodle Soup", mk: "Пилешка Нудл Супа" }, desc: { en: "Comforting chicken soup.", mk: "Утешна пилешка супа." }, likes: 93, instructions: { en: `1. Boil chicken and veggies.\n2. Add noodles.\n3. Season and serve.`, mk: `1. Варат пилешко и зеленчук.\n2. Додадете нудли.\n3. Зачинете и послужете.` } },
+    { emoji: "🍣", name: { en: "Nigiri Sushi", mk: "Нигири Суши" }, desc: { en: "Rice topped with fish.", mk: "Ориз покриен со риба." }, likes: 90, instructions: { en: `1. Shape sushi rice.\n2. Place fish on top.\n3. Serve with soy sauce.`, mk: `1. Формирајте суши ориз.\n2. Ставете риба одозгора.\n3. Послужете со соја сос.` } },
+    { emoji: "🍦", name: { en: "Vanilla Ice Cream", mk: "Ванила Сладолед" }, desc: { en: "Classic frozen dessert.", mk: "Класичен замрзен десерт." }, likes: 94, instructions: { en: `1. Mix ingredients.\n2. Freeze and churn.\n3. Serve cold.`, mk: `1. Измешајте состојки.\n2. Замрзнете и мешајте.\n3. Послужете ладно.` } },
+    { emoji: "🍗", name: { en: "BBQ Chicken", mk: "ББК Пилешко" }, desc: { en: "Grilled chicken with sauce.", mk: "Грилувано пилешко со сос." }, likes: 91, instructions: { en: `1. Marinate chicken.\n2. Grill.\n3. Brush with BBQ sauce.\n4. Serve.`, mk: `1. Маринирајте пилешко.\n2. Грилувајте.\n3. Протресете со ББК сос.\n4. Послужете.` } },
+    { emoji: "🍚", name: { en: "Sushi Bowl", mk: "Суши Чинија" }, desc: { en: "Deconstructed sushi in a bowl.", mk: "Деконструирано суши во чинија." }, likes: 89, instructions: { en: `1. Prepare sushi rice.\n2. Add fish and veggies.\n3. Drizzle sauce.\n4. Serve.`, mk: `1. Подгответе суши ориз.\n2. Додадете риба и зеленчук.\n3. Истурете сос.\n4. Послужете.` } },
+    { emoji: "🥗", name: { en: "Cobb Salad", mk: "Коб Салата" }, desc: { en: "Salad with meat, eggs & avocado.", mk: "Салата со месо, јајца и авокадо." }, likes: 90, instructions: { en: `1. Arrange lettuce, meat, eggs.\n2. Add avocado and dressing.\n3. Serve.`, mk: `1. Наредете марула, месо, јајца.\n2. Додадете авокадо и дресинг.\n3. Послужете.` } },
+    { emoji: "🍕", name: { en: "Pepperoni Pizza", mk: "Пеперони Пица" }, desc: { en: "Pizza topped with pepperoni.", mk: "Пица со пеперони." }, likes: 95, instructions: { en: `1. Prepare dough.\n2. Add sauce, cheese, and pepperoni.\n3. Bake at 475°F for 10-12 mins.`, mk: `1. Подгответе тесто.\n2. Додадете сос, сирење и пеперони.\n3. Печете 10-12 минути на 245°C.` } },
+    { emoji: "🥐", name: { en: "Croissant", mk: "Кроасан" }, desc: { en: "Flaky buttery pastry.", mk: "Лиснати путер пекари." }, likes: 88, instructions: { en: `1. Prepare dough with layers.\n2. Roll and fold.\n3. Bake until golden.`, mk: `1. Пригответе тесто со слоеви.\n2. Свиткајте и преклопувајте.\n3. Печете додека не биде златна боја.` } },
+    { emoji: "🍚", name: { en: "Bibimbap", mk: "Бибимбап" }, desc: { en: "Korean mixed rice bowl.", mk: "Корисна корејска чинија со ориз." }, likes: 90, instructions: { en: `1. Cook rice.\n2. Prepare veggies and meat.\n3. Assemble and add sauce.\n4. Mix and serve.`, mk: `1. Сварете ориз.\n2. Подгответе зеленчук и месо.\n3. Наредете и додадете сос.\n4. Измешајте и послужете.` } },
+    { emoji: "🌯", name: { en: "Veggie Burrito", mk: "Вегги Бурито" }, desc: { en: "Tortilla with beans & veggies.", mk: "Тортиља со грав и зеленчук." }, likes: 89, instructions: { en: `1. Cook beans and veggies.\n2. Warm tortilla.\n3. Add fillings.\n4. Wrap and serve.`, mk: `1. Пригответе грав и зеленчук.\n2. Загрејте тортиља.\n3. Додадете филови.\n4. Завиткајте и послужете.` } },
+    { emoji: "🥖", name: { en: "Baguette", mk: "Багет" }, desc: { en: "Classic French bread.", mk: "Класичен француски леб." }, likes: 87, instructions: { en: `1. Prepare dough.\n2. Shape baguettes.\n3. Bake until crusty.`, mk: `1. Подгответе тесто.\n2. Обликувајте багети.\n3. Печете додека не биде крцкава кора.` } },
+
+    // 10 new recipes
+    { emoji: "🍲", name: { en: "Minestrone Soup", mk: "Минестроне Супа" }, desc: { en: "Hearty Italian vegetable soup.", mk: "Срдечна италијанска супа со зеленчук." }, likes: 90, instructions: { en: `1. Chop veggies.\n2. Sauté onion and garlic.\n3. Add broth and beans.\n4. Simmer until veggies are tender.`, mk: `1. Исечкајте зеленчук.\n2. Пржете кромид и лук.\n3. Додадете супа и грав.\n4. Динстајте додека зеленчукот не омекне.` } },
+    { emoji: "🥘", name: { en: "Paella", mk: "Паела" }, desc: { en: "Spanish rice with seafood & saffron.", mk: "Шпански ориз со морска храна и шафран." }, likes: 89, instructions: { en: `1. Sauté onions, garlic, and peppers.\n2. Add rice and saffron.\n3. Add stock and seafood.\n4. Cook until rice is done.`, mk: `1. Пржете кромид, лук и пиперки.\n2. Додадете ориз и шафран.\n3. Истурете супа и морска храна.\n4. Гответе додека оризот не биде готов.` } },
+    { emoji: "🥟", name: { en: "Dumplings", mk: "Ќофтиња" }, desc: { en: "Steamed or boiled filled dumplings.", mk: "Парени или варени полнети ќофтиња." }, likes: 88, instructions: { en: `1. Prepare filling.\n2. Wrap in dough.\n3. Steam or boil until cooked.\n4. Serve with dipping sauce.`, mk: `1. Подгответе фил.\n2. Завиткајте во тесто.\n3. Парете или варете додека не се свари.\n4. Послужете со сос.` } },
+    { emoji: "🧆", name: { en: "Falafel", mk: "Фалафел" }, desc: { en: "Chickpea fritters with herbs.", mk: "Фритерки од наут со зелени зачини." }, likes: 90, instructions: { en: `1. Soak chickpeas.\n2. Mix with herbs and spices.\n3. Form patties and fry.\n4. Serve with sauce.`, mk: `1. Натопете наут.\n2. Измешајте соси и зелени зачини.\n3. Направете плескавици и испржете.\n4. Послужете со сос.` } },
+    { emoji: "🍜", name: { en: "Laksa", mk: "Лакса" }, desc: { en: "Spicy coconut noodle soup.", mk: "Пикантна кокосова нудл супа." }, likes: 87, instructions: { en: `1. Prepare spicy paste.\n2. Cook broth with coconut milk.\n3. Add noodles and toppings.\n4. Serve hot.`, mk: `1. Подгответе пикантна паста.\n2. Гответе чорба со кокосово млеко.\n3. Додадете нудли и додаци.\n4. Послужете топло.` } },
+    { emoji: "🥑", name: { en: "Avocado Toast", mk: "Авокадо Тост" }, desc: { en: "Smashed avocado on toast.", mk: "Измачкано авокадо на тост." }, likes: 91, instructions: { en: `1. Toast bread.\n2. Smash avocado.\n3. Add seasoning and spread.\n4. Serve immediately.`, mk: `1. Пржете тост.\n2. Измешкајте авокадо.\n3. Додадете зачини и намажете.\n4. Послужете веднаш.` } },
+    { emoji: "🍥", name: { en: "Ramen Bowl", mk: "Рамен Чинија" }, desc: { en: "Warm noodle bowl with broth & toppings.", mk: "Топла нудл чинија со чорба и додаци." }, likes: 89, instructions: { en: `1. Prepare broth.\n2. Cook noodles.\n3. Add toppings.\n4. Serve hot.`, mk: `1. Подгответе чорба.\n2. Сварете нудли.\n3. Додадете додаци.\n4. Послужете топло.` } },
+    { emoji: "🍓", name: { en: "Strawberry Smoothie", mk: "Јагода Смуди" }, desc: { en: "Fresh strawberries blended with yogurt.", mk: "Свеже јагоди со јогурт." }, likes: 90, instructions: { en: `1. Wash strawberries.\n2. Blend with yogurt and ice.\n3. Serve cold.`, mk: `1. Измијте јагоди.\n2. Изблендирајте со јогурт и мраз.\n3. Послужете ладно.` } },
+    { emoji: "🍗", name: { en: "Buffalo Wings", mk: "Бафало Крилца" }, desc: { en: "Spicy chicken wings.", mk: "Пикантни пилешки крилца." }, likes: 88, instructions: { en: `1. Season wings.\n2. Bake or fry until crispy.\n3. Toss in sauce.\n4. Serve with dip.`, mk: `1. Зачинете крилца.\n2. Печете или пржете додека не бидат крцкави.\n3. Протресете со сос.\n4. Послужете со сос.` } },
+    { emoji: "🍠", name: { en: "Roasted Sweet Potatoes", mk: "Печен Сладок Компир" }, desc: { en: "Sweet potatoes roasted with herbs.", mk: "Сладок компир печен со зачини." }, likes: 89, instructions: { en: `1. Cut sweet potatoes.\n2. Toss with oil & herbs.\n3. Roast until tender.\n4. Serve.`, mk: `1. Исечкајте компир.\n2. Протресете со масло и зачини.\n3. Печете додека не омекне.\n4. Послужете.` } }
   ];
 
   // DOM elements
   const recipesGrid = document.getElementById('recipesGrid');
   const searchInput = document.getElementById('searchInput');
   const darkModeToggle = document.getElementById('darkModeToggle');
+  const langToggle = document.getElementById('langToggle');
   const modal = document.getElementById('modal');
   const modalTitle = document.getElementById('modalTitle');
   const modalInstructions = document.getElementById('modalInstructions');
   const modalClose = document.getElementById('modalClose');
+  const siteTitle = document.getElementById('siteTitle');
 
-  // Render recipes
   function renderRecipes(list) {
     recipesGrid.innerHTML = '';
-    if(list.length === 0) {
-      recipesGrid.innerHTML = `<p style="grid-column:1/-1; text-align:center; font-weight:600;">No recipes found.</p>`;
+    if (list.length === 0) {
+      const p = document.createElement('p');
+      p.style = "grid-column:1/-1; text-align:center; font-weight:600;";
+      p.textContent = translations[currentLang].noResults;
+      recipesGrid.appendChild(p);
       return;
     }
     list.forEach((recipe, index) => {
@@ -339,12 +329,12 @@
       card.className = 'recipe-card';
       card.innerHTML = `
         <div class="recipe-emoji" aria-hidden="true">${recipe.emoji}</div>
-        <h3 class="recipe-name">${recipe.name}</h3>
-        <p class="recipe-desc">${recipe.desc}</p>
-        <div class="likes">❤️ ${recipe.likes}% like it</div>
+        <h3 class="recipe-name">${recipe.name[currentLang]}</h3>
+        <p class="recipe-desc">${recipe.desc[currentLang]}</p>
+        <div class="likes">❤️ ${recipe.likes}${translations[currentLang].likeText}</div>
         <div class="btn-group">
-          <button class="see-more-btn" data-index="${index}" aria-label="See more about ${recipe.name}">See More</button>
-          <button class="share-btn" data-index="${index}" aria-label="Share ${recipe.name}">Share</button>
+          <button class="see-more-btn" data-index="${index}" aria-label="${translations[currentLang].seeMore} ${recipe.name[currentLang]}">${translations[currentLang].seeMore}</button>
+          <button class="share-btn" data-index="${index}" aria-label="${translations[currentLang].share} ${recipe.name[currentLang]}">${translations[currentLang].share}</button>
         </div>
       `;
       recipesGrid.appendChild(card);
@@ -354,10 +344,10 @@
   // Initial render
   renderRecipes(recipes);
 
-  // Search functionality
+  // Search
   searchInput.addEventListener('input', () => {
     const term = searchInput.value.toLowerCase().trim();
-    const filtered = recipes.filter(r => r.name.toLowerCase().includes(term));
+    const filtered = recipes.filter(r => r.name[currentLang].toLowerCase().includes(term));
     renderRecipes(filtered);
   });
 
@@ -365,32 +355,44 @@
   darkModeToggle.addEventListener('click', () => {
     document.body.classList.toggle('dark');
     darkModeToggle.classList.toggle('active');
-    darkModeToggle.textContent = document.body.classList.contains('dark') ? 'Light Mode' : 'Dark Mode';
+    darkModeToggle.textContent = document.body.classList.contains('dark')
+      ? translations[currentLang].light
+      : translations[currentLang].dark;
   });
 
-  // Modal open/close and share button functionality
+  // Language toggle
+  langToggle.addEventListener('click', () => {
+    currentLang = currentLang === 'en' ? 'mk' : 'en';
+    siteTitle.textContent = translations[currentLang].siteTitle;
+    darkModeToggle.textContent = document.body.classList.contains('dark')
+      ? translations[currentLang].light
+      : translations[currentLang].dark;
+    langToggle.textContent = currentLang === 'en' ? '🇬🇧 EN' : '🇲🇰 MK';
+    searchInput.placeholder = translations[currentLang].searchPlaceholder;
+    renderRecipes(recipes);
+  });
+
+  // Modal open / share
   recipesGrid.addEventListener('click', (e) => {
-    if(e.target.classList.contains('see-more-btn')) {
+    if (e.target.classList.contains('see-more-btn')) {
       const idx = e.target.getAttribute('data-index');
       const recipe = recipes[idx];
-      modalTitle.textContent = recipe.name;
-      modalInstructions.textContent = recipe.instructions;
+      modalTitle.textContent = recipe.name[currentLang];
+      modalInstructions.textContent = recipe.instructions[currentLang];
       modal.style.display = 'flex';
-      modal.focus();
     }
-    if(e.target.classList.contains('share-btn')) {
+    if (e.target.classList.contains('share-btn')) {
       const idx = e.target.getAttribute('data-index');
       const recipe = recipes[idx];
-      const textToCopy = `${recipe.name} - ${recipe.desc}`;
-      if(navigator.clipboard) {
+      const textToCopy = `${recipe.name[currentLang]} - ${recipe.desc[currentLang]}`;
+      if (navigator.clipboard) {
         navigator.clipboard.writeText(textToCopy).then(() => {
           alert(`Copied to clipboard:\n${textToCopy}`);
         }).catch(() => {
           alert('Failed to copy to clipboard.');
         });
       } else {
-        // fallback prompt
-        prompt('Copy this recipe info:', textToCopy);
+        prompt('Copy:', textToCopy);
       }
     }
   });
@@ -399,23 +401,14 @@
   modalClose.addEventListener('click', () => {
     modal.style.display = 'none';
   });
-
-  // Close modal when clicking outside content
   modal.addEventListener('click', (e) => {
-    if(e.target === modal) {
-      modal.style.display = 'none';
-    }
+    if (e.target === modal) modal.style.display = 'none';
   });
-
-  // Accessibility: close modal on Escape key
   window.addEventListener('keydown', (e) => {
-    if(e.key === 'Escape' && modal.style.display === 'flex') {
+    if (e.key === 'Escape' && modal.style.display === 'flex') {
       modal.style.display = 'none';
     }
   });
 </script>
 </body>
 </html>
-
-
-
